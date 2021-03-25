@@ -20,10 +20,19 @@ module Bloomzed
 
       def call(params = {})
         @params = params
+
+        # Step-by-step checks
+        # Prevent chain execution if any of step fails
         check_missing_params!
         check_unexpected_params!
         validate_params!
+
+        # If we are here, all checks passed and
+        # we are ready to make request to API
         request!
+
+      # Prevent program to raise error and return
+      # Bloomzed::Failure with all error information instead
       rescue Bloomzed::Error
         @failure
       end
@@ -49,11 +58,7 @@ module Bloomzed
       end
 
       def request!
-        Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-          req = Net::HTTP::Post.new(uri)
-          req.body
-          http.request(req)
-        end
+       # Request to API
       end
 
       def fail!(error_code, payload)
