@@ -1,3 +1,5 @@
+require "securerandom"
+
 module Bloomzed
   module Payments
     # Using call(params) with correct params on intance of this
@@ -5,7 +7,6 @@ module Bloomzed
     # link to payment gate, where user is able to perform payment.
     class Create
       REQUIRED_PARAMS = {
-        host: String,
         payment_type: Integer,
         description: String,
         amount: Integer
@@ -18,52 +19,87 @@ module Bloomzed
 
       AVAILABLE_PARAMS = REQUIRED_PARAMS.merge(OPTIONAL_PARAMS).freeze
 
-      def call(params = {})
-        @params = params
+      def initialize(sid:, password:, endpoint: "http://79.142.93.158:3333")
+        @sid = sid
+        @password = password
+        @endpoint = endpoint
+      end
 
-        # Step-by-step checks
-        # Prevent chain execution if any of step fails
-        check_missing_params!
-        check_unexpected_params!
-        validate_params!
+      def call(
+        payment_type:,
+        amount:,
+        description:,
+        currency:,
+        phone_number:,
+        result_url:,
+        success_url:,
+        failure_url:,
+        back_url:
+      )
+        @payment_type = payment_type
+        @amount = amount
+        @description = description
+        @phone_number = phone_number
+        @currency = currency
+        @result_url = result_url
+        @success_url = success_url
+        @failure_url = failure_url
+        @back_url = back_url
+        @idempotency = SecureRandom.uuid
 
-        # If we are here, all checks passed and
-        # we are ready to make request to API
         request!
-
-      # Prevent program to raise error and return
-      # Bloomzed::Failure with all error information instead
-      rescue Bloomzed::Error
+      rescue ApiError
         @failure
       end
 
-      def check_missing_params!
-        missing_params = REQUIRED_PARAMS.keys - @params.keys
-        fail!(:missing_params, missing_params) if missing_params.any?
-      end
-
-      def check_unexpected_params!
-        unexpected_params = @params.keys - AVAILABLE_PARAMS.keys
-        fail!(:unexpected_params, unexpected_params) if unexpected_params.any?
-      end
-
-      def validate_params!
-        types_mismatch = {}
-        @params.each do |param|
-          actual = param[1].class
-          expected = AVAILABLE_PARAMS[param[0]]
-          types_mismatch[param[0]] = { expected: expected, actual: actual } unless param[1].instance_of?(expected)
-        end
-        fail!(:wrong_params_schema, types_mismatch) if types_mismatch.any?
-      end
+      private
 
       def request!
-       # Request to API
+        response = HTTParty.post(
+          "#{@endpoint}/payments",
+          {
+            headers: {
+              "Content-Type" => "application/json",
+              "X-Idempotency" => @idempotency
+            },
+            body: json_request_body,
+            basic_auth: { username: @sid, password: @password }
+          }
+        )
+
+        fail!(:wrong_credentials, "Check your SID and password") if response.code == 401
+
+        body = JSON.parse(response.body)
+
+        Bloomzed::Success(body["paymentPageUrl"])
       end
 
-      def fail!(error_code, payload)
-        @failure = Bloomzed::Failure[error_code, payload]
-        raise Bloomzed::Error, [error_code, payload]
+      def fail!(failure_code, payload)
+        @failure = Bloomzed::Failure[failure_code, payload]
+        raise Bloomzed::ApiError
+      end
+
+      def json_request_body
+        {
+          "paymentType" => @payment_type,
+          "phoneNumber" => @phone_number,
+          "amount" => {
+            "sum" => @amount,
+            "currency" => {
+              "code" => @currency,
+              "minorUnits" => 100
+            }
+          },
+          "description" => @description,
+          "options" => {
+            "callbacks" => {
+              "resultUrl" => @result_url,
+              "successUrl" => @success_url,
+              "failureUrl" => @failure_url,
+              "backUrl" => @back_url
+            }
+          }
+        }.to_json
       end
     end
   end
