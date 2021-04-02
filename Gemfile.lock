@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     bloomzed (0.1.0)
-      httparty (~> 0.17)
+      httparty (~> 0.14)
 
 GEM
   remote: https://rubygems.org/
