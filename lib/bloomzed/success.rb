@@ -5,5 +5,9 @@ module Bloomzed
     Success.new(value)
   end
 
-  class Success < Result; end
+  class Success < Result
+    def success?
+      true
+    end
+  end
 end
