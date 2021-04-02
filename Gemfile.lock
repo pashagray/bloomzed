@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bloomzed (0.1.0)
+    bloomzed (0.2.0)
       httparty (~> 0.14)
 
 GEM
@@ -14,7 +14,7 @@ GEM
       multi_xml (>= 0.5.2)
     mime-types (3.3.1)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2021.0225)
+    mime-types-data (3.2020.1104)
     multi_xml (0.6.0)
     parallel (1.20.1)
     parser (3.0.0.0)

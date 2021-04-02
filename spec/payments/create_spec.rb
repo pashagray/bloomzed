@@ -11,7 +11,15 @@ RSpec.describe Bloomzed::Payments::Create do
       result_url: "https://google.com/result",
       success_url: "https://google.com/success",
       failure_url: "https://google.com/failure",
-      back_url: "https://google.com/back"
+      back_url: "https://google.com/back",
+      products: [
+        {
+          id: 1,
+          name: "super product",
+          amount: 1000,
+          count: 1
+        }
+      ]
     }
   end
 

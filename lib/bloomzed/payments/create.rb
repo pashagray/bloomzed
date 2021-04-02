@@ -27,6 +27,7 @@ module Bloomzed
 
       def call(
         payment_type:,
+        products: [],
         amount:,
         description:,
         currency:,
@@ -37,6 +38,7 @@ module Bloomzed
         back_url:
       )
         @payment_type = payment_type
+        @products = products
         @amount = amount
         @description = description
         @phone_number = phone_number
@@ -91,6 +93,7 @@ module Bloomzed
             }
           },
           "description" => @description,
+          "products" => @products,
           "options" => {
             "callbacks" => {
               "resultUrl" => @result_url,
