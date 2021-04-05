@@ -7,7 +7,7 @@ RSpec.describe Bloomzed::Payments::Create do
       description: "test payment",
       amount: 10_000,
       currency: "KZT",
-      phone_number: "77771234567",
+      phone_number: "",
       result_url: "https://google.com/result",
       success_url: "https://google.com/success",
       failure_url: "https://google.com/failure",
@@ -37,7 +37,7 @@ RSpec.describe Bloomzed::Payments::Create do
     context "with correct credentials" do
       it "returns failure" do
         expect(subject.call(params).class).to be Bloomzed::Success
-        expect(subject.call(params).value).to include("http://79.142.93.158:3000/")
+        expect(subject.call(params).value[:url]).to include("http://79.142.93.158:3000/")
       end
     end
   end

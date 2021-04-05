@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bloomzed (0.2.0)
+    bloomzed (0.3.0)
       httparty (~> 0.14)
 
 GEM

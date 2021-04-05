@@ -65,7 +65,8 @@ module Bloomzed
               "X-Idempotency" => @idempotency
             },
             body: json_request_body,
-            basic_auth: { username: @sid, password: @password }
+            basic_auth: { username: @sid, password: @password },
+            debug_output: $stdout
           }
         )
 
@@ -73,7 +74,10 @@ module Bloomzed
 
         body = JSON.parse(response.body)
 
-        Bloomzed::Success(body["paymentPageUrl"])
+        Bloomzed::Success({
+          id: body["id"],
+          url: body["paymentPageUrl"]
+        })
       end
 
       def fail!(failure_code, payload)
